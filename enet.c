@@ -26,7 +26,9 @@
 
 // For lua5.2 support, instead we could replace all the luaL_register's with whatever
 // lua5.2's equivalent function is, but this is easier so whatever.
-#define LUA_COMPAT_MODULE
+#if (LUA_VERSION_NUM < 503)
+	#define LUA_COMPAT_MODULE
+#endif
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
@@ -37,6 +39,12 @@
 
 #define check_peer(l, idx)\
 	*(ENetPeer**)luaL_checkudata(l, idx, "enet_peer")
+
+// luaL_openlib and luaL_checkint do not exist in lua 5.3
+#if (LUA_VERSION_NUM >= 503)
+	#define luaL_register(L, UNUSED, R) luaL_newlib(L, R)
+	#define luaL_checkint luaL_checkinteger
+#endif
 
 /**
  * Parse address string, eg:
