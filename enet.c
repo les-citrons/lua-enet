@@ -42,7 +42,23 @@
 
 // luaL_openlib and luaL_checkint do not exist in lua 5.3
 #if (LUA_VERSION_NUM >= 503)
-	#define luaL_register(L, UNUSED, R) luaL_newlib(L, R)
+	#undef luaL_register
+	void luaL_register(lua_State *L, const char *name, const luaL_Reg *l)
+	{
+		if (name)
+			lua_newtable(L);
+
+		for (; l->name != NULL; l++)
+		{
+			lua_pushcfunction(L, l->func);
+			lua_setfield(L, -2, l->name);
+		}
+		if (name)
+		{
+			lua_pushvalue(L, -1);
+			lua_setglobal(L, name);
+		}
+	}
 	#define luaL_checkint luaL_checkinteger
 #endif
 
